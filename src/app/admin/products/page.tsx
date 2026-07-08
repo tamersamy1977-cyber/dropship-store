@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAdmin } from "@/context/AdminContext";
 import { products as defaultProducts } from "@/lib/products";
 
@@ -8,6 +8,9 @@ export default function AdminProductsPage() {
   const { customProducts, deletedProductIds, addProduct, updateProduct, deleteProduct } = useAdmin();
   const [editing, setEditing] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const importBtnRef = useRef<HTMLButtonElement>(null);
 
   const allProducts = [...defaultProducts.filter((p) => !deletedProductIds.includes(p.id)), ...customProducts];
 
@@ -33,7 +36,6 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     setSiteOrigin(window.location.origin);
-    // Handle import from bookmarklet (URL query param)
     const params = new URLSearchParams(window.location.search);
     const importData = params.get("import");
     if (importData) {
@@ -42,17 +44,50 @@ export default function AdminProductsPage() {
         setForm({
           ...emptyProduct,
           id: Date.now().toString(),
-          name: d.t || "",
-          slug: (d.t || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0600-\u06FF]/g, ""),
-          description: d.d || "",
-          price: parseFloat(d.p) || 0,
-          images: d.i ? [d.i, ""] : [""],
+          name: d.t || d.title || "",
+          slug: ((d.t || d.title || "")).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0600-\u06FF]/g, ""),
+          description: d.d || d.description || "",
+          price: parseFloat(d.p || d.price) || 0,
+          images: d.i || d.image ? [d.i || d.image, ""] : [""],
+          features: d.f || d.features ? (d.f || d.features).split(",").filter(Boolean) : [""],
         });
         setShowForm(true);
         window.history.replaceState({}, "", "/admin/products");
       } catch {}
     }
   }, []);
+
+  const handleImportUrl = async () => {
+    if (!importUrl) return alert("ضعي رابط المنتج أولاً");
+    setImporting(true);
+    try {
+      const res = await fetch("/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: importUrl }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.bookmarklet ? "⚠️ السيرفر ماقدر يجيب البيانات. استخدمي الاستيراد السحري في الأسفل." : data.error);
+        return;
+      }
+      setForm({
+        ...emptyProduct,
+        id: Date.now().toString(),
+        name: data.title || "",
+        slug: (data.title || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0600-\u06FF]/g, ""),
+        description: data.description || "",
+        price: data.price || 0,
+        images: data.images.length > 0 ? data.images : [""],
+        features: data.features.length > 0 ? data.features : [""],
+      });
+      setShowForm(true);
+      alert("✅ تم استيراد البيانات! راجعيها واحفظي.");
+    } catch {
+      alert("تعذر الاستيراد. أضيفي البيانات يدوياً.");
+    }
+    setImporting(false);
+  };
 
   const resetForm = () => {
     setForm({ ...emptyProduct, id: Date.now().toString(), slug: "" });
@@ -79,7 +114,7 @@ export default function AdminProductsPage() {
     if (editing) {
       updateProduct(product);
     } else {
-      addProduct({ ...product, id: Date.now().toString(), slug: form.name.toLowerCase().replace(/\s+/g, "-") });
+      addProduct({ ...product, id: Date.now().toString(), slug: form.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0600-\u06FF]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "") });
     }
     setShowForm(false);
     resetForm();
@@ -88,6 +123,22 @@ export default function AdminProductsPage() {
   const handleDelete = (id: string) => {
     if (confirm("Delete this product?")) deleteProduct(id);
   };
+
+  const bookmarkletCode = (() => {
+    const code = [
+      "(function(){",
+      "var m=function(n){var e=document.querySelector('meta['+n+']');return e?.content||''};",
+      "var t=document.querySelector('h1')?.innerText?.substring(0,100)||m('property=\"og:title\"')||document.title.substring(0,100);",
+      "var p=(document.querySelector('[class*=\"price\"]')||document.querySelector('[class*=\"Price\"]')||document.querySelector('[class*=\"amount\"]'))?.innerText?.match(/[\\d.,]+/)?.[0]?.replace(/,/g,'')||m('property=\"product:price:amount\"')||m('property=\"og:price:amount\"')||'0';",
+      "var i=m('property=\"og:image\"')||(document.querySelector('img[src*=\"http\"]')?.src)||'';",
+      "var d=m('name=\"description\"')||m('property=\"og:description\"')||'';",
+      "var f='';",
+      "document.querySelectorAll('li').forEach(function(e){if(e.innerText.length>10)f+=e.innerText.trim().substring(0,100)+','});",
+      "location.href='" + siteOrigin + "/admin/products?import='+encodeURIComponent(JSON.stringify({t:t,p:p,i:i,d:d,f:f.slice(0,-1)}));",
+      "})()",
+    ].join("");
+    return "javascript:" + code;
+  })();
 
   return (
     <div>
@@ -105,7 +156,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Bookmarklet section */}
-      <details className="mb-6 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-xl p-4">
+      <details className="mb-4 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-xl p-4">
         <summary className="text-sm font-semibold text-rose-800 cursor-pointer hover:text-rose-600">
           ⚡ الاستيراد السحري — اسحبي الزر ده لشريط المفضلة
         </summary>
@@ -113,19 +164,7 @@ export default function AdminProductsPage() {
           <p>١. امسحي الزر ده واسحبيه إلى Bookmarks bar في المتصفح:</p>
           <div className="bg-white rounded-lg p-3 border border-rose-200 text-center">
             <a
-              href={(() => {
-                const code = [
-                  "(function(){",
-                  "var m=function(n){var e=document.querySelector('meta['+n+']');return e?.content||''};",
-                  "var t=document.querySelector('h1')?.innerText?.substring(0,100)||m('property=\"og:title\"')||document.title.substring(0,100);",
-                  "var p=(document.querySelector('[class*=\"price\"]')||document.querySelector('[class*=\"Price\"]'))?.innerText?.match(/[\\d.,]+/)?.[0]?.replace(/,/g,'')||'0';",
-                  "var i=m('property=\"og:image\"')||(document.querySelector('img[src*=\"http\"]')?.src)||'';",
-                  "var d=m('name=\"description\"')||m('property=\"og:description\"')||'';",
-                  "location='" + siteOrigin + "/admin/products?import='+encodeURIComponent(JSON.stringify({t:t,p:p,i:i,d:d}));",
-                  "})()"
-                ].join("");
-                return "javascript:" + code;
-              })()}
+              href={bookmarkletCode}
               className="inline-block bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors shadow-sm"
             >
               🪄 استيراد سريع
@@ -137,6 +176,30 @@ export default function AdminProductsPage() {
         </div>
       </details>
 
+      {/* Import from URL section - always visible */}
+      <div className="mb-6 bg-rose-50 rounded-xl p-4 border border-rose-200">
+        <h3 className="text-sm font-semibold text-gray-900 mb-2">📦 استيراد من رابط</h3>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={importUrl}
+            onChange={(e) => setImportUrl(e.target.value)}
+            placeholder="الصقي رابط المنتج هنا..."
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+          />
+          <button
+            ref={importBtnRef}
+            type="button"
+            disabled={importing}
+            onClick={handleImportUrl}
+            className="bg-gradient-to-r from-rose-600 to-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-rose-700 hover:to-rose-600 transition-colors whitespace-nowrap disabled:opacity-50"
+          >
+            {importing ? "جاري..." : "استيراد"}
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">يدعم AliExpress، Amazon، Shein، والمواقع اللي فيها Open Graph tags</p>
+      </div>
+
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-10 pb-10 overflow-y-auto" onClick={() => setShowForm(false)}>
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
@@ -146,62 +209,6 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-              {/* Import from URL */}
-              <div className="bg-rose-50 rounded-xl p-4 border border-rose-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">📦 استيراد من رابط</h3>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    id="importUrl"
-                    placeholder="الصقي رابط المنتج هنا..."
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const url = (document.getElementById("importUrl") as HTMLInputElement).value;
-                      if (!url) return alert("ضعي رابط المنتج أولاً");
-                      const btn = document.activeElement as HTMLButtonElement;
-                      btn.disabled = true;
-                      btn.textContent = "جاري...";
-                      try {
-                         const res = await fetch("/api/scrape", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ url }),
-                        });
-                        const data = await res.json();
-                        if (data.error) {
-                          const msg = data.bookmarklet
-                            ? "⚠️ السيرفر ماقدر يجيب البيانات. استخدمي زر الاستيراد السحري في الأسفل."
-                            : data.error;
-                          alert(msg);
-                          return;
-                        }
-                        setForm({
-                          ...emptyProduct,
-                          id: Date.now().toString(),
-                          name: data.title || "",
-                          slug: (data.title || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0600-\u06FF]/g, ""),
-                          description: data.description || "",
-                          price: data.price || 0,
-                          images: data.images.length > 0 ? data.images : [""],
-                          features: data.features.length > 0 ? data.features : [""],
-                        });
-                        alert("✅ تم استيراد البيانات! راجعيها واحفظي.");
-                      } catch {
-                        alert("تعذر الاستيراد. أضيفي البيانات يدوياً.");
-                      }
-                      btn.disabled = false;
-                      btn.textContent = "استيراد";
-                    }}
-                    className="bg-gradient-to-r from-rose-600 to-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-rose-700 hover:to-rose-600 transition-colors whitespace-nowrap"
-                  >
-                    استيراد
-                  </button>
-                </div>
-                <p className="text-xs text-gray-400 mt-2">يدعم AliExpress، Amazon، Shein، والمواقع اللي فيها Open Graph tags</p>
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>

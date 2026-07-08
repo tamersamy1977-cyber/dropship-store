@@ -9,7 +9,7 @@ export default function Home() {
   const { allProducts } = useAdmin();
   const featured = allProducts.filter((p) => p.rating >= 4.6).slice(0, 4);
   const bestsellers = allProducts.filter((p) => p.reviews > 2000).slice(0, 4);
-  const newArrivals = allProducts.slice(0, 4);
+  const newArrivals = [...allProducts].reverse().slice(0, 4);
 
   return (
     <div>
