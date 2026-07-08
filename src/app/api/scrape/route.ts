@@ -1,105 +1,101 @@
 import { NextResponse } from "next/server";
 
-function extractMeta($: any, html: string) {
-  const getMeta = (prop: string) => {
-    const match = html.match(new RegExp(`<meta[^>]+${prop}[^>]+>`, "i"));
-    if (match) {
-      const content = match[0].match(/content=["']([^"']+)["']/);
-      return content ? content[1] : "";
-    }
+async function fetchViaProxy(url: string, proxy?: string): Promise<string> {
+  const target = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const res = await fetch(target, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Accept: "text/html,application/xhtml+xml",
+      },
+    });
+    clearTimeout(timeout);
+    if (!proxy) return await res.text();
+    const json = await res.json();
+    return json.contents || json.body || "";
+  } catch {
+    clearTimeout(timeout);
     return "";
+  }
+}
+
+function extractData(html: string) {
+  const getMeta = (pattern: RegExp) => {
+    const m = html.match(pattern);
+    return m?.[1]?.trim() || "";
   };
 
   let title =
-    getMeta('property="og:title"') ||
-    getMeta('name="twitter:title"') ||
-    html.match(/<title>([^<]+)<\/title>/)?.[1]?.trim() ||
+    getMeta(/<meta\s+property="og:title"\s+content="([^"]+)"/i) ||
+    getMeta(/<meta\s+name="twitter:title"\s+content="([^"]+)"/i) ||
+    getMeta(/<title>([^<]+)<\/title>/i) ||
     "";
 
   let description =
-    getMeta('property="og:description"') ||
-    getMeta('name="description"') ||
+    getMeta(/<meta\s+property="og:description"\s+content="([^"]+)"/i) ||
+    getMeta(/<meta\s+name="description"\s+content="([^"]+)"/i) ||
     "";
 
   const images: string[] = [];
-  const ogImage = getMeta('property="og:image"');
+  const ogImage = getMeta(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
   if (ogImage) images.push(ogImage);
 
-  // Extract all image URLs from the page
   const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
-  let match;
-  while ((match = imgRegex.exec(html)) !== null) {
-    const src = match[1];
+  let m;
+  while ((m = imgRegex.exec(html)) !== null) {
+    const src = m[1];
     if (src.startsWith("http") && !images.includes(src) && images.length < 5) {
       images.push(src);
     }
   }
 
   let price = 0;
-  const priceMeta =
-    getMeta('property="product:price:amount"') ||
-    getMeta('property="og:price:amount"');
-
+  const priceMeta = getMeta(/<meta\s+property="product:price:amount"\s+content="([^"]+)"/i);
   if (priceMeta) price = parseFloat(priceMeta) || 0;
 
   if (!price) {
-    const pricePatterns = [
-      /"price"\s*:\s*([\d.]+)/,
-      /"priceAmount"\s*:\s*([\d.]+)/,
-      /"originalPrice"\s*:\s*([\d.]+)/,
-      /€\s*([\d.,]+)/,
-      /\$\s*([\d.,]+)/,
-      /US\s*\$([\d.,]+)/,
+    const patterns = [
+      /"price"\s*:\s*"?([\d.]+)"?/i,
+      /"priceAmount"\s*:\s*"?([\d.]+)"?/i,
+      /"originalPrice"\s*:\s*"?([\d.]+)"?/i,
+      /data-price=["']([\d.]+)["']/i,
     ];
-    for (const pattern of pricePatterns) {
-      const m = html.match(pattern);
-      if (m) {
-        price = parseFloat(m[1].replace(/,/g, "")) || 0;
-        if (price > 0) break;
-      }
+    for (const p of patterns) {
+      const match = html.match(p);
+      if (match) { price = parseFloat(match[1]) || 0; if (price > 0) break; }
     }
   }
 
-  // Try JSON-LD
-  const jsonldMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/);
-  if (jsonldMatch) {
+  // JSON-LD
+  const jm = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/);
+  if (jm) {
     try {
-      const jsonld = JSON.parse(jsonldMatch[1]);
-      const data = Array.isArray(jsonld) ? jsonld[0] : jsonld;
-      if (!title && data.name) title = data.name;
-      if (!description && data.description) description = data.description;
-      if (!price && data.offers?.price) price = parseFloat(data.offers.price);
-    } catch {}
-  }
-
-  // Try AliExpress specific data
-  const aeDataMatch = html.match(/window\.runParams\s*=\s*({[^;]+})/);
-  if (aeDataMatch) {
-    try {
-      const aeData = JSON.parse(aeDataMatch[1]);
-      const data = aeData?.data?.product || aeData?.data;
-      if (data) {
-        if (!title) title = data.subject || "";
-        if (!description) description = data.description || "";
-        if (!price && data.price) price = parseFloat(String(data.price)) || 0;
-      }
+      const jd = JSON.parse(jm[1]);
+      const d = Array.isArray(jd) ? jd[0] : jd;
+      if (!title && d.name) title = d.name;
+      if (!description && d.description) description = d.description;
+      if (!price && d.offers?.price) price = parseFloat(d.offers.price);
+      if (!images.length && d.image) images.push(d.image);
     } catch {}
   }
 
   const features: string[] = [];
-  const bulletRegex = /<li[^>]*>([^<]{10,200})<\/li>/gi;
-  while ((match = bulletRegex.exec(html)) !== null) {
-    const text = match[1].trim().replace(/<[^>]+>/g, "");
+  const liRegex = /<li[^>]*>([^<]{10,200})<\/li>/gi;
+  while ((m = liRegex.exec(html)) !== null) {
+    const text = m[1].replace(/<[^>]+>/g, "").trim();
     if (text.length > 10 && features.length < 6 && !features.includes(text)) {
       features.push(text);
     }
   }
 
   return {
-    title: (title || "Unknown Product").substring(0, 200),
-    description: (description || "").substring(0, 1000),
-    images: images.filter((u) => u.startsWith("http")).slice(0, 5),
-    price,
+    title: title.substring(0, 200) || "Unknown Product",
+    description: description.substring(0, 1000),
+    images: images.filter((u) => u.startsWith("http") || u.startsWith("data:")).slice(0, 5),
+    price: Math.round(price * 100) / 100,
     features: features.slice(0, 6),
   };
 }
@@ -107,37 +103,44 @@ function extractMeta($: any, html: string) {
 export async function POST(request: Request) {
   try {
     const { url } = await request.json();
-    if (!url) return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    if (!url) return NextResponse.json({ error: "URL مطلوب" }, { status: 400 });
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    // Try direct fetch first
+    let html = await fetchViaProxy(url);
 
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9,ar;q=0.8",
-        "Cache-Control": "no-cache",
-      },
-    });
-    clearTimeout(timeout);
+    // Fallback: try CORS proxies
+    if (!html || html.length < 500) {
+      const proxies = [
+        "https://api.allorigins.win/raw?url=",
+        "https://corsproxy.io/?url=",
+      ];
+      for (const proxy of proxies) {
+        html = await fetchViaProxy(url, proxy);
+        if (html && html.length > 500) break;
+      }
+    }
 
-    const html = await res.text();
-    const data = extractMeta(null, html);
+    if (!html || html.length < 200) {
+      return NextResponse.json({
+        error: "تعذر استيراد البيانات. الموقع بيمنع الاتصال الآلي.",
+        bookmarklet: true,
+      }, { status: 422 });
+    }
+
+    const data = extractData(html);
 
     if (!data.title && !data.images.length) {
-      return NextResponse.json(
-        { error: "الموقع منع الاستيراد. أضيفي البيانات يدوياً — الاسم والصورة والسعر." },
-        { status: 422 }
-      );
+      return NextResponse.json({
+        error: "تعذر استخراج بيانات المنتج",
+        bookmarklet: true,
+      }, { status: 422 });
     }
 
     return NextResponse.json(data);
   } catch {
-    return NextResponse.json(
-      { error: "تعذر الاتصال بالموقع. أضيفي البيانات يدوياً." },
-      { status: 422 }
-    );
+    return NextResponse.json({
+      error: "خطأ في الاتصال",
+      bookmarklet: true,
+    }, { status: 422 });
   }
 }

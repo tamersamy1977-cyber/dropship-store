@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin } from "@/context/AdminContext";
 import { products as defaultProducts } from "@/lib/products";
 
@@ -29,6 +29,30 @@ export default function AdminProductsPage() {
   };
 
   const [form, setForm] = useState<any>({ ...emptyProduct });
+  const [siteOrigin, setSiteOrigin] = useState("https://dropship-store-smoky.vercel.app");
+
+  useEffect(() => {
+    setSiteOrigin(window.location.origin);
+    // Handle import from bookmarklet (URL query param)
+    const params = new URLSearchParams(window.location.search);
+    const importData = params.get("import");
+    if (importData) {
+      try {
+        const d = JSON.parse(decodeURIComponent(importData));
+        setForm({
+          ...emptyProduct,
+          id: Date.now().toString(),
+          name: d.t || "",
+          slug: (d.t || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0600-\u06FF]/g, ""),
+          description: d.d || "",
+          price: parseFloat(d.p) || 0,
+          images: d.i ? [d.i, ""] : [""],
+        });
+        setShowForm(true);
+        window.history.replaceState({}, "", "/admin/products");
+      } catch {}
+    }
+  }, []);
 
   const resetForm = () => {
     setForm({ ...emptyProduct, id: Date.now().toString(), slug: "" });
@@ -80,6 +104,39 @@ export default function AdminProductsPage() {
         </button>
       </div>
 
+      {/* Bookmarklet section */}
+      <details className="mb-6 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-xl p-4">
+        <summary className="text-sm font-semibold text-rose-800 cursor-pointer hover:text-rose-600">
+          ⚡ الاستيراد السحري — اسحبي الزر ده لشريط المفضلة
+        </summary>
+        <div className="mt-3 text-sm text-gray-600 space-y-2">
+          <p>١. امسحي الزر ده واسحبيه إلى Bookmarks bar في المتصفح:</p>
+          <div className="bg-white rounded-lg p-3 border border-rose-200 text-center">
+            <a
+              href={(() => {
+                const code = [
+                  "(function(){",
+                  "var m=function(n){var e=document.querySelector('meta['+n+']');return e?.content||''};",
+                  "var t=document.querySelector('h1')?.innerText?.substring(0,100)||m('property=\"og:title\"')||document.title.substring(0,100);",
+                  "var p=(document.querySelector('[class*=\"price\"]')||document.querySelector('[class*=\"Price\"]'))?.innerText?.match(/[\\d.,]+/)?.[0]?.replace(/,/g,'')||'0';",
+                  "var i=m('property=\"og:image\"')||(document.querySelector('img[src*=\"http\"]')?.src)||'';",
+                  "var d=m('name=\"description\"')||m('property=\"og:description\"')||'';",
+                  "location='" + siteOrigin + "/admin/products?import='+encodeURIComponent(JSON.stringify({t:t,p:p,i:i,d:d}));",
+                  "})()"
+                ].join("");
+                return "javascript:" + code;
+              })()}
+              className="inline-block bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors shadow-sm"
+            >
+              🪄 استيراد سريع
+            </a>
+          </div>
+          <p>٢. اذهبي إلى أي صفحة منتج (AliExpress، Amazon، Shein)</p>
+          <p>٣. اضغطي على البوكمارك "استيراد سريع"</p>
+          <p>٤. هتوصلي هنا تلقائياً والبيانات مملوءة — احفظي فقط!</p>
+        </div>
+      </details>
+
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-10 pb-10 overflow-y-auto" onClick={() => setShowForm(false)}>
           <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
@@ -108,14 +165,17 @@ export default function AdminProductsPage() {
                       btn.disabled = true;
                       btn.textContent = "جاري...";
                       try {
-                        const res = await fetch("/api/scrape", {
+                         const res = await fetch("/api/scrape", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ url }),
                         });
                         const data = await res.json();
                         if (data.error) {
-                          alert(data.error);
+                          const msg = data.bookmarklet
+                            ? "⚠️ السيرفر ماقدر يجيب البيانات. استخدمي زر الاستيراد السحري في الأسفل."
+                            : data.error;
+                          alert(msg);
                           return;
                         }
                         setForm({
