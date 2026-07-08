@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { useAdmin } from "@/context/AdminContext";
 import { Product } from "@/lib/types";
-import { formatPrice } from "@/lib/products";
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalPrice, shipping, grandTotal, totalItems } = useCart();
+  const { displayPrice } = useAdmin();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -81,7 +82,7 @@ export default function CartDrawer() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h3>
-                      <p className="text-sm font-semibold text-rose-600 mt-1">{formatPrice(item.product.price)}</p>
+                      <p className="text-sm font-semibold text-rose-600 mt-1">{displayPrice(item.product.price)}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
@@ -108,7 +109,7 @@ export default function CartDrawer() {
                         </svg>
                       </button>
                       <p className="text-sm font-semibold text-gray-900">
-                        {formatPrice(item.product.price * item.quantity)}
+                        {displayPrice(item.product.price * item.quantity)}
                       </p>
                     </div>
                   </li>
@@ -121,18 +122,18 @@ export default function CartDrawer() {
             <div className="border-t border-rose-100 p-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">المجموع الفرعي</span>
-                <span className="font-medium">{formatPrice(totalPrice)}</span>
+                <span className="font-medium">{displayPrice(totalPrice)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">الشحن</span>
-                <span className="font-medium">{shipping === 0 ? "مجاني" : formatPrice(shipping)}</span>
+                <span className="font-medium">{shipping === 0 ? "مجاني" : displayPrice(shipping)}</span>
               </div>
               {shipping > 0 && (
                 <p className="text-xs text-gray-400">الشحن مجاني للطلبات فوق 50$</p>
               )}
               <div className="flex justify-between text-base font-bold border-t border-rose-100 pt-3">
                 <span>الإجمالي</span>
-                <span>{formatPrice(grandTotal)}</span>
+                <span>{displayPrice(grandTotal)}</span>
               </div>
               <Link
                 href="/checkout"

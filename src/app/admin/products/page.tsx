@@ -89,6 +89,59 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+              {/* Import from URL */}
+              <div className="bg-rose-50 rounded-xl p-4 border border-rose-200">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">📦 استيراد من رابط</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    id="importUrl"
+                    placeholder="الصقي رابط المنتج هنا..."
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const url = (document.getElementById("importUrl") as HTMLInputElement).value;
+                      if (!url) return alert("ضعي رابط المنتج أولاً");
+                      const btn = document.activeElement as HTMLButtonElement;
+                      btn.disabled = true;
+                      btn.textContent = "جاري...";
+                      try {
+                        const res = await fetch("/api/scrape", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ url }),
+                        });
+                        const data = await res.json();
+                        if (data.error) {
+                          alert(data.error);
+                          return;
+                        }
+                        setForm({
+                          ...emptyProduct,
+                          id: Date.now().toString(),
+                          name: data.title || "",
+                          slug: (data.title || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0600-\u06FF]/g, ""),
+                          description: data.description || "",
+                          price: data.price || 0,
+                          images: data.images.length > 0 ? data.images : [""],
+                          features: data.features.length > 0 ? data.features : [""],
+                        });
+                        alert("✅ تم استيراد البيانات! راجعيها واحفظي.");
+                      } catch {
+                        alert("تعذر الاستيراد. أضيفي البيانات يدوياً.");
+                      }
+                      btn.disabled = false;
+                      btn.textContent = "استيراد";
+                    }}
+                    className="bg-gradient-to-r from-rose-600 to-rose-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-rose-700 hover:to-rose-600 transition-colors whitespace-nowrap"
+                  >
+                    استيراد
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-2">يدعم AliExpress، Amazon، Shein، والمواقع اللي فيها Open Graph tags</p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>

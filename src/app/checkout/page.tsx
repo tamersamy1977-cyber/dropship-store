@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useAdmin } from "@/context/AdminContext";
-import { formatPrice } from "@/lib/products";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function CheckoutPage() {
   const { items, totalPrice, shipping, grandTotal, clearCart } = useCart();
-  const { addOrder } = useAdmin();
+  const { addOrder, displayPrice } = useAdmin();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -273,7 +272,7 @@ export default function CheckoutPage() {
             disabled={processing}
             className="w-full bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 disabled:from-rose-300 disabled:to-rose-300 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-rose-200 text-lg"
           >
-            {processing ? "جاري المعالجة..." : `تأكيد الطلب - ${formatPrice(grandTotal)}`}
+            {processing ? "جاري المعالجة..." : `تأكيد الطلب - ${displayPrice(grandTotal)}`}
           </button>
         </form>
 
@@ -289,7 +288,7 @@ export default function CheckoutPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{item.product.name}</p>
                     <p className="text-xs text-gray-500">الكمية: {item.quantity}</p>
-                    <p className="text-sm font-semibold text-rose-600">{formatPrice(item.product.price * item.quantity)}</p>
+                    <p className="text-sm font-semibold text-rose-600">{displayPrice(item.product.price * item.quantity)}</p>
                   </div>
                 </div>
               ))}
@@ -297,15 +296,15 @@ export default function CheckoutPage() {
             <div className="border-t border-rose-100 pt-4 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">المجموع الفرعي</span>
-                <span className="font-medium">{formatPrice(totalPrice)}</span>
+                <span className="font-medium">{displayPrice(totalPrice)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">الشحن</span>
-                <span className="font-medium">{shipping === 0 ? "مجاني" : formatPrice(shipping)}</span>
+                <span className="font-medium">{shipping === 0 ? "مجاني" : displayPrice(shipping)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t border-rose-100 pt-2">
                 <span>الإجمالي</span>
-                <span>{formatPrice(grandTotal)}</span>
+                <span>{displayPrice(grandTotal)}</span>
               </div>
             </div>
           </div>

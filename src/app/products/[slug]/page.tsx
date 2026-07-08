@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice } from "@/lib/products";
 import { useCart } from "@/context/CartContext";
 import { useAdmin } from "@/context/AdminContext";
 import ProductCard from "@/components/ProductCard";
@@ -12,7 +11,7 @@ import ProductCard from "@/components/ProductCard";
 export default function ProductDetailPage() {
   const params = useParams();
   const { addItem } = useCart();
-  const { allProducts, getProductBySlug } = useAdmin();
+  const { allProducts, getProductBySlug, displayPrice } = useAdmin();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
@@ -94,12 +93,12 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex items-baseline gap-3 mb-6">
-            <span className="text-3xl font-bold text-gray-900">{formatPrice(product.price)}</span>
+            <span className="text-3xl font-bold text-gray-900">{displayPrice(product.price)}</span>
             {product.originalPrice && (
               <>
-                <span className="text-xl text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+                <span className="text-xl text-gray-400 line-through">{displayPrice(product.originalPrice)}</span>
                 <span className="bg-rose-100 text-rose-600 text-sm font-semibold px-2.5 py-0.5 rounded-full">
-                  وفر {formatPrice(product.originalPrice - product.price)}
+                  وفر {displayPrice(product.originalPrice - product.price)}
                 </span>
               </>
             )}

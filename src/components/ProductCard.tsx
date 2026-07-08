@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/types";
-import { formatPrice } from "@/lib/products";
+import { useAdmin } from "@/context/AdminContext";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { displayPrice } = useAdmin();
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -44,9 +45,9 @@ export default function ProductCard({ product }: { product: Product }) {
           <span className="text-xs text-gray-400 mr-1">({product.reviews})</span>
         </div>
         <div className="mt-auto flex items-center gap-2">
-          <span className="text-lg font-bold text-gray-900">{formatPrice(product.price)}</span>
+          <span className="text-lg font-bold text-gray-900">{displayPrice(product.price)}</span>
           {product.originalPrice && (
-            <span className="text-sm text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+            <span className="text-sm text-gray-400 line-through">{displayPrice(product.originalPrice)}</span>
           )}
         </div>
         <button

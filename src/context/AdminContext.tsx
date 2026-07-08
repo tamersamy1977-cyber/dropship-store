@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from "react";
 import { Product } from "@/lib/types";
-import { products as defaultProducts } from "@/lib/products";
+import { products as defaultProducts, formatEGP, displayPrice as dp } from "@/lib/products";
 
 interface AdminProduct extends Product {
   _createdAt?: string;
@@ -22,6 +22,10 @@ interface AdminContextType {
   isLoggedIn: boolean;
   login: (pass: string) => boolean;
   logout: () => void;
+  exchangeRate: number;
+  setExchangeRate: (r: number) => void;
+  formatEGP: (usd: number) => string;
+  displayPrice: (usd: number) => string;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -33,6 +37,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [deletedProductIds, setDeletedProductIds] = useState<string[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [exchangeRate, setExchangeRateState] = useState(50);
 
   useEffect(() => {
     try {
@@ -44,7 +49,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       if (o) setOrders(JSON.parse(o));
       const logged = localStorage.getItem("admin_logged");
       if (logged === "true") setIsLoggedIn(true);
+      const savedRate = localStorage.getItem("exchange_rate");
+      if (savedRate) setExchangeRateState(parseFloat(savedRate));
     } catch {}
+  }, []);
+
+  const setExchangeRate = useCallback((r: number) => {
+    setExchangeRateState(r);
+    localStorage.setItem("exchange_rate", String(r));
   }, []);
 
   const saveProducts = (items: AdminProduct[]) => {
@@ -119,7 +131,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   return (
     <AdminContext.Provider
-      value={{ customProducts, deletedProductIds, allProducts: mergedProducts, getProductBySlug: getProductBySlugFn, addProduct, updateProduct, deleteProduct, orders, addOrder, updateOrderStatus, isLoggedIn, login, logout }}
+      value={{
+        customProducts, deletedProductIds,
+        allProducts: mergedProducts, getProductBySlug: getProductBySlugFn,
+        addProduct, updateProduct, deleteProduct,
+        orders, addOrder, updateOrderStatus,
+        isLoggedIn, login, logout,
+        exchangeRate, setExchangeRate,
+        formatEGP: (usd: number) => formatEGP(usd, exchangeRate),
+        displayPrice: (usd: number) => dp(usd, exchangeRate),
+      }}
     >
       {children}
     </AdminContext.Provider>

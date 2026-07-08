@@ -628,3 +628,11 @@ export function getFeaturedProducts(): Product[] {
 export function formatPrice(price: number): string {
   return `$${price.toFixed(2)}`;
 }
+
+export function formatEGP(priceUSD: number, rate: number): string {
+  return `ج.م ${(priceUSD * rate).toFixed(2)}`;
+}
+
+export function displayPrice(priceUSD: number, rate: number): string {
+  return rate === 1 ? `$${priceUSD.toFixed(2)}` : `ج.م ${(priceUSD * rate).toFixed(2)}`;
+}

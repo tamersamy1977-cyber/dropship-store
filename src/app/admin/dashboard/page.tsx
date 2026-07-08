@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useAdmin } from "@/context/AdminContext";
 
 export default function AdminDashboard() {
-  const { allProducts, orders } = useAdmin();
+  const { allProducts, orders, exchangeRate, setExchangeRate } = useAdmin();
+  const [rateInput, setRateInput] = useState(String(exchangeRate));
   const totalProducts = allProducts.length;
   const totalOrders = orders.length;
   const pendingOrders = orders.filter((o) => o.status === "pending" || !o.status).length;
@@ -54,6 +56,28 @@ export default function AdminDashboard() {
             >
               View Storefront
             </Link>
+          </div>
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">سعر الصرف (USD → EGP)</h3>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                step="0.01"
+                value={rateInput}
+                onChange={(e) => setRateInput(e.target.value)}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={() => {
+                  const r = parseFloat(rateInput);
+                  if (r > 0) setExchangeRate(r);
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                حفظ
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">حالياً: 1 USD = {exchangeRate} EGP</p>
           </div>
         </div>
 

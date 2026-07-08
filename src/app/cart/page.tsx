@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/products";
+import { useAdmin } from "@/context/AdminContext";
 import { useState } from "react";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, totalPrice, shipping, grandTotal, clearCart } = useCart();
+  const { displayPrice } = useAdmin();
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
 
@@ -71,7 +72,7 @@ export default function CartPage() {
                   {item.product.name}
                 </Link>
                 <p className="text-sm text-gray-500 mt-0.5">{item.product.category}</p>
-                <p className="text-lg font-bold text-rose-600 mt-2">{formatPrice(item.product.price)}</p>
+                <p className="text-lg font-bold text-rose-600 mt-2">{displayPrice(item.product.price)}</p>
               </div>
               <div className="flex flex-col items-end justify-between">
                 <button
@@ -100,7 +101,7 @@ export default function CartPage() {
                   </button>
                 </div>
                 <p className="text-sm font-semibold text-gray-900">
-                  {formatPrice(item.product.price * item.quantity)}
+                  {displayPrice(item.product.price * item.quantity)}
                 </p>
               </div>
             </div>
@@ -135,24 +136,24 @@ export default function CartPage() {
           <div className="space-y-3 border-t border-rose-100 pt-4">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">المجموع الفرعي</span>
-              <span className="font-medium text-gray-900">{formatPrice(totalPrice)}</span>
+              <span className="font-medium text-gray-900">{displayPrice(totalPrice)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-green-600">الخصم</span>
-                <span className="font-medium text-green-600">-{formatPrice(discount)}</span>
+                <span className="font-medium text-green-600">-{displayPrice(discount)}</span>
               </div>
             )}
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">الشحن</span>
-              <span className="font-medium text-gray-900">{shipping === 0 ? "مجاني" : formatPrice(shipping)}</span>
+              <span className="font-medium text-gray-900">{shipping === 0 ? "مجاني" : displayPrice(shipping)}</span>
             </div>
             {shipping > 0 && (
               <p className="text-xs text-gray-400">الشحن مجاني للطلبات فوق 50$</p>
             )}
             <div className="flex justify-between text-lg font-bold border-t border-rose-100 pt-3">
               <span>الإجمالي</span>
-              <span>{formatPrice(finalTotal)}</span>
+              <span>{displayPrice(finalTotal)}</span>
             </div>
           </div>
 

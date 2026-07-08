@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Product } from "@/lib/types";
 import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/products";
+import { useAdmin } from "@/context/AdminContext";
 
 export default function AddToCartToast() {
   const { addItem } = useCart();
+  const { displayPrice } = useAdmin();
   const [show, setShow] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const timer = useRef<NodeJS.Timeout | null>(null);
@@ -42,7 +43,7 @@ export default function AddToCartToast() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{product.name}</p>
-          <p className="text-xs text-gray-400">أُضيف إلى السلة · {formatPrice(product.price)}</p>
+          <p className="text-xs text-gray-400">أُضيف إلى السلة · {displayPrice(product.price)}</p>
         </div>
       </div>
     </div>
