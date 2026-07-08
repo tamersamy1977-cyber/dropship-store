@@ -49,7 +49,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const saveProducts = (items: AdminProduct[]) => {
     setCustomProducts(items);
-    localStorage.setItem("admin_products", JSON.stringify(items));
+    try {
+      localStorage.setItem("admin_products", JSON.stringify(items));
+    } catch {
+      alert("خطأ: مساحة التخزين غير كافية. استخدمي صور بحجم أقل.");
+    }
   };
 
   const addProduct = (p: AdminProduct) => {

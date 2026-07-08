@@ -131,8 +131,24 @@ export default function AdminProductsPage() {
                         if (file) {
                           const reader = new FileReader();
                           reader.onload = (ev) => {
-                            const dataUrl = ev.target?.result as string;
-                            setForm({ ...form, images: [...form.images, dataUrl] });
+                            const img = new Image();
+                            img.onload = () => {
+                              const max = 800;
+                              let w = img.width, h = img.height;
+                              if (w > max || h > max) {
+                                const ratio = Math.min(max / w, max / h);
+                                w = Math.round(w * ratio);
+                                h = Math.round(h * ratio);
+                              }
+                              const canvas = document.createElement("canvas");
+                              canvas.width = w;
+                              canvas.height = h;
+                              const ctx = canvas.getContext("2d")!;
+                              ctx.drawImage(img, 0, 0, w, h);
+                              const compressed = canvas.toDataURL("image/jpeg", 0.7);
+                              setForm({ ...form, images: [...form.images, compressed] });
+                            };
+                            img.src = ev.target?.result as string;
                           };
                           reader.readAsDataURL(file);
                         }
