@@ -21,9 +21,9 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-        <Link href="/products" className="text-blue-600 hover:text-blue-700 font-medium">
-          &larr; Back to Products
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">المنتج غير موجود</h1>
+        <Link href="/products" className="text-rose-600 hover:text-rose-700 font-medium">
+          ← العودة إلى المنتجات
         </Link>
       </div>
     );
@@ -39,22 +39,19 @@ export default function ProductDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-8">
-        <Link href="/" className="hover:text-blue-600">Home</Link>
+        <Link href="/" className="hover:text-rose-600">الرئيسية</Link>
         <span className="mx-2">/</span>
-        <Link href="/products" className="hover:text-blue-600">Products</Link>
+        <Link href="/products" className="hover:text-rose-600">المنتجات</Link>
         <span className="mx-2">/</span>
-        <Link href={`/products?category=${product.category}`} className="hover:text-blue-600 capitalize">{product.category}</Link>
+        <Link href={`/products?category=${product.category}`} className="hover:text-rose-600 capitalize">{product.category}</Link>
         <span className="mx-2">/</span>
         <span className="text-gray-900">{product.name}</span>
       </nav>
 
-      {/* Product Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
-        {/* Images */}
         <div>
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-4">
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-rose-50/50 mb-4">
             <Image
               src={product.images[selectedImage]}
               alt={product.name}
@@ -70,8 +67,8 @@ export default function ProductDetailPage() {
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
-                  className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                    selectedImage === i ? "border-blue-600" : "border-gray-200 hover:border-gray-300"
+                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-colors ${
+                    selectedImage === i ? "border-rose-500" : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <Image src={img} alt={`${product.name} view ${i + 1}`} fill className="object-cover" sizes="80px" />
@@ -81,12 +78,11 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        {/* Info */}
         <div>
-          <p className="text-sm text-blue-600 font-medium uppercase tracking-wide mb-2">{product.category}</p>
+          <p className="text-sm text-rose-600 font-medium uppercase tracking-wide mb-2">{product.category}</p>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
 
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-4" dir="ltr">
             <div className="flex">
               {Array.from({ length: 5 }).map((_, i) => (
                 <svg key={i} className={`w-5 h-5 ${i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 20 20">
@@ -94,7 +90,7 @@ export default function ProductDetailPage() {
                 </svg>
               ))}
             </div>
-            <span className="text-sm text-gray-500">({product.reviews} reviews)</span>
+            <span className="text-sm text-gray-500">({product.reviews} تقييم)</span>
           </div>
 
           <div className="flex items-baseline gap-3 mb-6">
@@ -102,8 +98,8 @@ export default function ProductDetailPage() {
             {product.originalPrice && (
               <>
                 <span className="text-xl text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
-                <span className="bg-red-100 text-red-600 text-sm font-semibold px-2.5 py-0.5 rounded-full">
-                  Save {formatPrice(product.originalPrice - product.price)}
+                <span className="bg-rose-100 text-rose-600 text-sm font-semibold px-2.5 py-0.5 rounded-full">
+                  وفر {formatPrice(product.originalPrice - product.price)}
                 </span>
               </>
             )}
@@ -111,9 +107,8 @@ export default function ProductDetailPage() {
 
           <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
 
-          {/* Features */}
           <div className="mb-6">
-            <h3 className="font-semibold text-gray-900 mb-3">Key Features</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">المميزات</h3>
             <ul className="space-y-2">
               {product.features.map((f, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
@@ -126,9 +121,8 @@ export default function ProductDetailPage() {
             </ul>
           </div>
 
-          {/* Quantity & Add to Cart */}
           <div className="flex items-center gap-4 mb-8">
-            <div className="flex items-center border border-gray-300 rounded-lg">
+            <div className="flex items-center border border-gray-300 rounded-xl">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="px-4 py-2.5 text-gray-600 hover:bg-gray-50 transition-colors"
@@ -147,15 +141,14 @@ export default function ProductDetailPage() {
             </div>
             <button
               onClick={handleAddToCart}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors text-lg"
+              className="flex-1 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-lg shadow-rose-200 text-lg"
             >
-              Add to Cart
+              أضف إلى السلة
             </button>
           </div>
 
-          {/* Specs */}
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Specifications</h3>
+          <div className="border-t border-rose-100 pt-6">
+            <h3 className="font-semibold text-gray-900 mb-4">المواصفات</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {Object.entries(product.specifications).map(([key, value]) => (
                 <div key={key} className="flex justify-between py-2 border-b border-gray-100 text-sm">
@@ -168,10 +161,9 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Related Products */}
       {related.length > 0 && (
-        <div className="border-t border-gray-200 pt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Related Products</h2>
+        <div className="border-t border-rose-100 pt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">منتجات مشابهة</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />

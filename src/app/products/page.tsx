@@ -33,36 +33,36 @@ function ProductsContent() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
           {categoryFilter
-            ? categories.find((c) => c.slug === categoryFilter)?.name || "Products"
-            : "All Products"}
+            ? categories.find((c) => c.slug === categoryFilter)?.name || "المنتجات"
+            : "جميع المنتجات"}
         </h1>
-        <p className="text-gray-500 mt-2">{filtered.length} products found</p>
+        <p className="text-gray-500 mt-2">{filtered.length} منتج</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         <aside className="lg:w-64 flex-shrink-0">
-          <div className="bg-white rounded-xl border border-gray-200 p-5 sticky top-24">
-            <h2 className="font-semibold text-gray-900 mb-4">Categories</h2>
+          <div className="bg-white rounded-2xl border border-rose-100 p-5 sticky top-24">
+            <h2 className="font-semibold text-gray-900 mb-4">الأقسام</h2>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/products"
-                  className={`block text-sm py-1.5 px-3 rounded-lg transition-colors ${
+                  className={`block text-sm py-1.5 px-3 rounded-xl transition-colors ${
                     !categoryFilter
-                      ? "bg-blue-50 text-blue-600 font-medium"
+                      ? "bg-rose-50 text-rose-600 font-medium"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
-                  All Categories
+                  الكل
                 </Link>
               </li>
               {categories.map((cat) => (
                 <li key={cat.id}>
                   <Link
                     href={`/products?category=${cat.slug}`}
-                    className={`block text-sm py-1.5 px-3 rounded-lg transition-colors ${
+                    className={`block text-sm py-1.5 px-3 rounded-xl transition-colors ${
                       categoryFilter === cat.slug
-                        ? "bg-blue-50 text-blue-600 font-medium"
+                        ? "bg-rose-50 text-rose-600 font-medium"
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }`}
                   >
@@ -77,9 +77,9 @@ function ProductsContent() {
         <div className="flex-1">
           {filtered.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">No products found.</p>
-              <Link href="/products" className="text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block">
-                Clear filters
+              <p className="text-gray-500 text-lg">لا توجد منتجات.</p>
+              <Link href="/products" className="text-rose-600 hover:text-rose-700 font-medium mt-2 inline-block">
+                إعادة تعيين الفلتر
               </Link>
             </div>
           ) : (
@@ -97,7 +97,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><p className="text-gray-500">Loading products...</p></div>}>
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><p className="text-gray-500">جاري تحميل المنتجات...</p></div>}>
       <ProductsContent />
     </Suspense>
   );

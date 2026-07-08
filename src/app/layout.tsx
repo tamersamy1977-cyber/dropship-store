@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ShopPro - Premium Dropshipping Store",
-  description: "Your premium destination for quality products at unbeatable prices. Fast shipping worldwide.",
+  title: "أثر ستور - متجر دروب شيبينغ راقي",
+  description: "منتجات مختارة بعناية، جودة عالية، أسعار تنافسية. تسوقي الآن من أثر ستور — وجهتك الأولى للتسوق الراقي.",
 };
 
 export default function RootLayout({
@@ -30,7 +30,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ar"
+      dir="rtl"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

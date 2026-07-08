@@ -19,7 +19,7 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     zip: "",
-    country: "United States",
+    country: "مصر",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -34,14 +34,14 @@ export default function CheckoutPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!form.firstName.trim()) errs.firstName = "Required";
-    if (!form.lastName.trim()) errs.lastName = "Required";
-    if (!form.email.trim()) errs.email = "Required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "Invalid email";
-    if (!form.phone.trim()) errs.phone = "Required";
-    if (!form.address.trim()) errs.address = "Required";
-    if (!form.city.trim()) errs.city = "Required";
-    if (!form.zip.trim()) errs.zip = "Required";
+    if (!form.firstName.trim()) errs.firstName = "مطلوب";
+    if (!form.lastName.trim()) errs.lastName = "مطلوب";
+    if (!form.email.trim()) errs.email = "مطلوب";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = "بريد غير صحيح";
+    if (!form.phone.trim()) errs.phone = "مطلوب";
+    if (!form.address.trim()) errs.address = "مطلوب";
+    if (!form.city.trim()) errs.city = "مطلوب";
+    if (!form.zip.trim()) errs.zip = "مطلوب";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -76,14 +76,14 @@ export default function CheckoutPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Order Placed Successfully!</h1>
-        <p className="text-gray-500 mb-2">Thank you for your purchase. We&apos;ll send you a confirmation email shortly.</p>
-        <p className="text-gray-400 text-sm mb-8">Order #ORD-{Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">تم تأكيد الطلب بنجاح!</h1>
+        <p className="text-gray-500 mb-2">شكراً لكِ. سنرسل لكِ تأكيداً عبر البريد الإلكتروني قريباً.</p>
+        <p className="text-gray-400 text-sm mb-8">رقم الطلب #ORD-{Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
         <Link
           href="/products"
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+          className="inline-block bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-sm"
         >
-          Continue Shopping
+          متابعة التسوق
         </Link>
       </div>
     );
@@ -92,9 +92,9 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Cart is Empty</h1>
-        <Link href="/products" className="text-blue-600 hover:text-blue-700 font-medium">
-          &larr; Back to Products
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">السلة فارغة</h1>
+        <Link href="/products" className="text-rose-600 hover:text-rose-700 font-medium">
+          ← العودة إلى المنتجات
         </Link>
       </div>
     );
@@ -102,155 +102,158 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">إتمام الشراء</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Form */}
         <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
+          <div className="bg-white rounded-2xl border border-rose-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">معلومات الاتصال</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">الاسم الأول</label>
                 <input
                   type="text"
                   name="firstName"
                   value={form.firstName}
                   onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.firstName ? "border-red-400" : "border-gray-300"}`}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 ${errors.firstName ? "border-red-400" : "border-gray-300"}`}
                 />
                 {errors.firstName && <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">الاسم الأخير</label>
                 <input
                   type="text"
                   name="lastName"
                   value={form.lastName}
                   onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.lastName ? "border-red-400" : "border-gray-300"}`}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 ${errors.lastName ? "border-red-400" : "border-gray-300"}`}
                 />
                 {errors.lastName && <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
                 <input
                   type="email"
                   name="email"
                   value={form.email}
                   onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? "border-red-400" : "border-gray-300"}`}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 ${errors.email ? "border-red-400" : "border-gray-300"}`}
                 />
                 {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
                 <input
                   type="tel"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.phone ? "border-red-400" : "border-gray-300"}`}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 ${errors.phone ? "border-red-400" : "border-gray-300"}`}
                 />
                 {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h2>
+          <div className="bg-white rounded-2xl border border-rose-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">عنوان الشحن</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">العنوان</label>
                 <input
                   type="text"
                   name="address"
                   value={form.address}
                   onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.address ? "border-red-400" : "border-gray-300"}`}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 ${errors.address ? "border-red-400" : "border-gray-300"}`}
                 />
                 {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">المدينة</label>
                   <input
                     type="text"
                     name="city"
                     value={form.city}
                     onChange={handleChange}
-                    className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.city ? "border-red-400" : "border-gray-300"}`}
+                    className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 ${errors.city ? "border-red-400" : "border-gray-300"}`}
                   />
                   {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">المنطقة/المحافظة</label>
                   <input
                     type="text"
                     name="state"
                     value={form.state}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">الرمز البريدي</label>
                   <input
                     type="text"
                     name="zip"
                     value={form.zip}
                     onChange={handleChange}
-                    className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.zip ? "border-red-400" : "border-gray-300"}`}
+                    className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 ${errors.zip ? "border-red-400" : "border-gray-300"}`}
                   />
                   {errors.zip && <p className="text-xs text-red-500 mt-1">{errors.zip}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">الدولة</label>
                   <select
                     name="country"
                     value={form.country}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                   >
-                    <option>United States</option>
-                    <option>Canada</option>
-                    <option>United Kingdom</option>
-                    <option>Australia</option>
-                    <option>Germany</option>
-                    <option>France</option>
+                    <option>مصر</option>
+                    <option>السعودية</option>
+                    <option>الإمارات</option>
+                    <option>الكويت</option>
+                    <option>قطر</option>
+                    <option>البحرين</option>
+                    <option>عمان</option>
+                    <option>الأردن</option>
+                    <option>المغرب</option>
+                    <option>الجزائر</option>
                   </select>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h2>
-            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+          <div className="bg-white rounded-2xl border border-rose-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">وسيلة الدفع</h2>
+            <div className="border border-gray-300 rounded-2xl p-4 bg-gray-50">
               <div className="flex items-center gap-3">
-                <input type="radio" checked readOnly className="accent-blue-600" />
+                <input type="radio" checked readOnly className="accent-rose-600" />
                 <div>
-                  <p className="font-medium text-sm text-gray-900">Credit Card (Demo)</p>
-                  <p className="text-xs text-gray-500">Pay with Visa, Mastercard, or Amex</p>
+                  <p className="font-medium text-sm text-gray-900">بطاقة ائتمان (تجريبي)</p>
+                  <p className="text-xs text-gray-500">الدفع بـ Visa, Mastercard, أو Amex</p>
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">رقم البطاقة</label>
                   <input
                     type="text"
                     placeholder="4242 4242 4242 4242"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Expiry</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ الانتهاء</label>
                   <input
                     type="text"
                     placeholder="MM/YY"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -258,7 +261,7 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     placeholder="123"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                   />
                 </div>
               </div>
@@ -268,41 +271,40 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={processing}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3.5 rounded-lg transition-colors text-lg"
+            className="w-full bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 disabled:from-rose-300 disabled:to-rose-300 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-rose-200 text-lg"
           >
-            {processing ? "Processing..." : `Place Order - ${formatPrice(grandTotal)}`}
+            {processing ? "جاري المعالجة..." : `تأكيد الطلب - ${formatPrice(grandTotal)}`}
           </button>
         </form>
 
-        {/* Order Summary */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+          <div className="bg-white rounded-2xl border border-rose-100 p-6 sticky top-24">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">ملخص الطلب</h2>
             <div className="space-y-4 mb-4">
               {items.map((item) => (
                 <div key={item.product.id} className="flex gap-3">
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-rose-50/50 flex-shrink-0">
                     <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" sizes="64px" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{item.product.name}</p>
-                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                    <p className="text-sm font-semibold text-blue-600">{formatPrice(item.product.price * item.quantity)}</p>
+                    <p className="text-xs text-gray-500">الكمية: {item.quantity}</p>
+                    <p className="text-sm font-semibold text-rose-600">{formatPrice(item.product.price * item.quantity)}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="border-t border-gray-200 pt-4 space-y-2 text-sm">
+            <div className="border-t border-rose-100 pt-4 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Subtotal</span>
+                <span className="text-gray-500">المجموع الفرعي</span>
                 <span className="font-medium">{formatPrice(totalPrice)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Shipping</span>
-                <span className="font-medium">{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
+                <span className="text-gray-500">الشحن</span>
+                <span className="font-medium">{shipping === 0 ? "مجاني" : formatPrice(shipping)}</span>
               </div>
-              <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
-                <span>Total</span>
+              <div className="flex justify-between text-lg font-bold border-t border-rose-100 pt-2">
+                <span>الإجمالي</span>
                 <span>{formatPrice(grandTotal)}</span>
               </div>
             </div>
