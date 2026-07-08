@@ -122,8 +122,47 @@ export default function AdminProductsPage() {
                   <input value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (one per line)</label>
-                  <textarea value={form.images.join("\n")} onChange={(e) => setForm({ ...form, images: e.target.value.split("\n").filter(Boolean) })} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Images</label>
+                  <div className="flex gap-2 mb-2">
+                    <label className="flex-1 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-400 transition-colors text-sm text-gray-500">
+                      <span>+ Upload from computer</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            const dataUrl = ev.target?.result as string;
+                            setForm({ ...form, images: [...form.images, dataUrl] });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                        e.target.value = "";
+                      }} />
+                    </label>
+                  </div>
+                  {form.images.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {(form.images as string[]).map((img, i) => (
+                        <div key={i} className="relative group">
+                          <img src={img} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                          <button
+                            onClick={() => setForm({ ...form, images: (form.images as string[]).filter((_, idx) => idx !== i) })}
+                            className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <details className="text-xs text-gray-400">
+                    <summary className="cursor-pointer hover:text-gray-600">Or paste image URLs (one per line)</summary>
+                    <textarea value={(form.images as string[]).filter((u) => u.startsWith("http")).join("\n")} onChange={(e) => {
+                      const urls = e.target.value.split("\n").filter(Boolean);
+                      const existing = (form.images as string[]).filter((u) => !u.startsWith("http"));
+                      setForm({ ...form, images: [...existing, ...urls] });
+                    }} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1" />
+                  </details>
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Features (one per line)</label>
